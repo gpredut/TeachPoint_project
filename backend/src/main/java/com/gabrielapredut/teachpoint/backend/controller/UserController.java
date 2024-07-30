@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
+import javax.validation.Valid;  // Correct import for Spring Boot 2.7.x
 
 @RestController
 @RequestMapping("/api/users")
@@ -33,3 +33,4 @@ public class UserController {
         return ResponseEntity.badRequest().body(result);
     }
 }
+
