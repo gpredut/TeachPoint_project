@@ -36,7 +36,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http
             .csrf().disable()
             .authorizeRequests()
-            .antMatchers("/public/**").permitAll()
+            .antMatchers("/api/auth/**").permitAll() // Allow public access to auth endpoints
+            .antMatchers("/api/public/**").permitAll() // Allow public access to other endpoints if needed
             .anyRequest().authenticated()
             .and()
             .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
