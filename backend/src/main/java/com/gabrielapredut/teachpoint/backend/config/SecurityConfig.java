@@ -1,8 +1,7 @@
 package com.gabrielapredut.teachpoint.backend.config;
 
-import com.gabrielapredut.teachpoint.backend.security.JwtAuthenticationFilter;
-import com.gabrielapredut.teachpoint.backend.security.JwtUtil;
-import com.gabrielapredut.teachpoint.backend.service.UserDetailsServiceImpl;
+import java.util.Arrays;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -13,6 +12,13 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import com.gabrielapredut.teachpoint.backend.security.JwtAuthenticationFilter;
+import com.gabrielapredut.teachpoint.backend.security.JwtUtil;
+import com.gabrielapredut.teachpoint.backend.service.UserDetailsServiceImpl;
 
 @Configuration
 @EnableWebSecurity
@@ -34,9 +40,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
+            .cors().configurationSource(corsConfigurationSource())  // Enable CORS with custom configuration
+            .and()
             .csrf().disable()
             .authorizeRequests()
-            .antMatchers("/api/auth/**").permitAll() // Allow public access to auth endpoints
+            .antMatchers("/api/auth/**").permitAll()
             .antMatchers("/api/public/**").permitAll() // Allow public access to other endpoints if needed
             .anyRequest().authenticated()
             .and()
@@ -60,5 +68,17 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
-}
 
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:4200")); // Adjust as needed
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(Arrays.asList("Content-Type", "Authorization"));
+        configuration.setAllowCredentials(true);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
+    }
+}
