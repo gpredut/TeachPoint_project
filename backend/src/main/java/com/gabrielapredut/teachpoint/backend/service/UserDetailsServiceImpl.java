@@ -8,6 +8,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class UserDetailsServiceImpl implements UserDetailsService {
 
@@ -25,4 +27,10 @@ public class UserDetailsServiceImpl implements UserDetailsService {
                 .authorities(user.getRoles().stream().map(role -> role.getName().name()).toArray(String[]::new))
                 .build();
     }
+
+    // New method to fetch all users
+    public List<User> getAllUsers() {
+        return userRepository.findAll();
+    }
 }
+

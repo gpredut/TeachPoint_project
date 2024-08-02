@@ -44,11 +44,14 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             .and()
             .csrf().disable()
             .authorizeRequests()
-            .antMatchers("/api/auth/**").permitAll()
+            .antMatchers("/api/auth/**").permitAll() // Allow access to authentication endpoints
             .antMatchers("/api/public/**").permitAll() // Allow public access to other endpoints if needed
-            .anyRequest().authenticated()
+            .antMatchers("/h2-console/**").permitAll() // Allow access to H2 Console
+            .antMatchers("/favicon.ico").permitAll() // Allow access to favicon.ico
+            .anyRequest().authenticated() // Require authentication for other requests
             .and()
-            .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
+            .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
+            .headers().frameOptions().disable(); // Allow frame options for H2 Console
     }
 
     @Bean
@@ -82,3 +85,4 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         return source;
     }
 }
+

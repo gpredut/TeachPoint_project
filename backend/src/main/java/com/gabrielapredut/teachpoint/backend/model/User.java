@@ -26,12 +26,13 @@ public class User {
 
     @Column
     private String email;
+    
 
     @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinTable(name = "user_roles",
                joinColumns = @JoinColumn(name = "user_id"),
                inverseJoinColumns = @JoinColumn(name = "role_id"))
-    private Set<Role> roles = new HashSet<>();
+    private Set<Role> role = new HashSet<>();
 
     // Default constructor is required by JPA
     public User() {}
@@ -44,7 +45,7 @@ public class User {
         this.username = username;
         this.email = email;
         this.password = password;
-    }
+        }
 
     // Getters and Setters
     public Long getId() {
@@ -96,11 +97,11 @@ public class User {
     }
 
     public Set<Role> getRoles() {
-        return roles;
+        return role;
     }
 
-    public void setRoles(Set<Role> roles) {
-        this.roles = roles;
+    public void setRoles(Set<Role> role) {
+        this.role = role;
     }
 }
 
