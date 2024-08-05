@@ -1,10 +1,11 @@
 package com.gabrielapredut.teachpoint.backend.controller;
 
 import com.gabrielapredut.teachpoint.backend.model.User;
+import com.gabrielapredut.teachpoint.backend.model.UserLoginRequest;
+import com.gabrielapredut.teachpoint.backend.model.UserRegistrationRequest;
 import com.gabrielapredut.teachpoint.backend.security.JwtUtil;
 import com.gabrielapredut.teachpoint.backend.service.UserDetailsServiceImpl;
 import com.gabrielapredut.teachpoint.backend.service.UserService;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -33,31 +34,44 @@ public class AuthController {
     private UserService userService;
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestParam String username, @RequestParam String password) {
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(username, password));
+    public ResponseEntity<?> login(@RequestBody UserLoginRequest loginRequest) {
+        String username = loginRequest.getUsername();
+        String password = loginRequest.getPassword();
         
-        if (authentication.isAuthenticated()) {
-            String token = jwtUtil.createToken(username);
-            return ResponseEntity.ok(Collections.singletonMap("token", token));
-        } else {
-            return ResponseEntity.status(401).body("Invalid credentials");
+        try {
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(username, password));
+            
+            if (authentication.isAuthenticated()) {
+                String token = jwtUtil.createToken(username);
+                return ResponseEntity.ok(Collections.singletonMap("token", token));
+            } else {
+                return ResponseEntity.status(401).body("Invalid credentials");
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(401).body("Authentication failed: " + e.getMessage());
         }
     }
-    
+
+   
     @PostMapping("/register")
-    public ResponseEntity<String> register(@RequestBody User user, @RequestParam String roleName) {
-        String result = userService.registerUser(user, roleName);
-        if (result.startsWith("Error:")) {
-            return ResponseEntity.badRequest().body(result);
+    public ResponseEntity<String> register(@RequestBody UserRegistrationRequest request) {
+        try {
+            userService.registerUser(request);
+            return ResponseEntity.ok("User registered successfully");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error: " + e.getMessage());
         }
-        return ResponseEntity.ok(result);
     }
 
     @GetMapping("/users")
     public ResponseEntity<List<User>> getAllUsers() {
-        List<User> users = userDetailsService.getAllUsers();
-        return ResponseEntity.ok(users);
+        try {
+            List<User> users = userDetailsService.getAllUsers();
+            return ResponseEntity.ok(users);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(null);
+        }
     }
 }
 

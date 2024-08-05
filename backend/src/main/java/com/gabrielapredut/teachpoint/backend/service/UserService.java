@@ -3,14 +3,13 @@ package com.gabrielapredut.teachpoint.backend.service;
 import com.gabrielapredut.teachpoint.backend.model.ERole;
 import com.gabrielapredut.teachpoint.backend.model.Role;
 import com.gabrielapredut.teachpoint.backend.model.User;
+import com.gabrielapredut.teachpoint.backend.model.UserRegistrationRequest;
 import com.gabrielapredut.teachpoint.backend.repository.RoleRepository;
 import com.gabrielapredut.teachpoint.backend.repository.UserRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.gabrielapredut.teachpoint.backend.security.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
 import java.util.Optional;
@@ -18,8 +17,6 @@ import java.util.Set;
 
 @Service
 public class UserService {
-
-    private static final Logger logger = LoggerFactory.getLogger(UserService.class);
 
     @Autowired
     private UserRepository userRepository;
@@ -30,38 +27,40 @@ public class UserService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    @Transactional
-    public String registerUser(User user, String roleName) {
-        if (userRepository.existsByUsername(user.getUsername())) {
-            return "Error: Username is already taken!";
-        }
+    @Autowired
+    private JwtUtil jwtUtil; // Add JwtUtil dependency
 
-        if (userRepository.existsByEmail(user.getEmail())) {
-            return "Error: Email is already in use!";
-        }
+    public void registerUser(UserRegistrationRequest request) {
+        // Convert role name from String to ERole
+        ERole roleEnum = getERoleFromString(request.getRoleName());
 
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        // Check if the role exists
+        Role role = roleRepository.findByName(roleEnum)
+                .orElseThrow(() -> new RuntimeException("Role not found"));
 
-        // Assign role based on user input or default to STUDENT
+        // Create new User
+        User user = new User();
+        user.setUsername(request.getUsername());
+        user.setPassword(passwordEncoder.encode(request.getPassword())); // Encode password
+        user.setName(request.getName());
+        user.setSurname(request.getSurname());
+        user.setEmail(request.getEmail());
+
+        // Assign role to user
         Set<Role> roles = new HashSet<>();
-        ERole role;
-        try {
-            role = ERole.valueOf(roleName.toUpperCase());
-        } catch (IllegalArgumentException e) {
-            return "Error: Role is not valid.";
-        }
-
-        Role userRole = roleRepository.findByName(role)
-            .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-        roles.add(userRole);
+        roles.add(role);
         user.setRoles(roles);
 
+        // Save the user
         userRepository.save(user);
+    }
 
-        // Log successful registration
-        logger.info("User registered: {}", user.getUsername());
-
-        return "User registered successfully";
+    private ERole getERoleFromString(String roleName) {
+        try {
+            return ERole.valueOf(roleName.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException("Role not found: " + roleName);
+        }
     }
 
     public String loginUser(User user) {
@@ -71,4 +70,9 @@ public class UserService {
         }
         return "Invalid username or password";
     }
+
+    public String createToken(String username) {
+        return jwtUtil.createToken(username);
+    }
 }
+
