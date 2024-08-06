@@ -13,8 +13,9 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -34,7 +35,7 @@ public class AuthController {
     private UserService userService;
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody UserLoginRequest loginRequest) {
+    public ResponseEntity<Map<String, String>> login(@RequestBody UserLoginRequest loginRequest) {
         String username = loginRequest.getUsername();
         String password = loginRequest.getPassword();
         
@@ -44,23 +45,32 @@ public class AuthController {
             
             if (authentication.isAuthenticated()) {
                 String token = jwtUtil.createToken(username);
-                return ResponseEntity.ok(Collections.singletonMap("token", token));
+                Map<String, String> response = new HashMap<>();
+                response.put("token", token);
+                return ResponseEntity.ok(response);
             } else {
-                return ResponseEntity.status(401).body("Invalid credentials");
+                Map<String, String> errorResponse = new HashMap<>();
+                errorResponse.put("error", "Invalid credentials");
+                return ResponseEntity.status(401).body(errorResponse);
             }
         } catch (Exception e) {
-            return ResponseEntity.status(401).body("Authentication failed: " + e.getMessage());
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", "Authentication failed: " + e.getMessage());
+            return ResponseEntity.status(401).body(errorResponse);
         }
     }
 
-   
     @PostMapping("/register")
-    public ResponseEntity<String> register(@RequestBody UserRegistrationRequest request) {
+    public ResponseEntity<Map<String, String>> register(@RequestBody UserRegistrationRequest request) {
         try {
             userService.registerUser(request);
-            return ResponseEntity.ok("User registered successfully");
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "User registered successfully");
+            return ResponseEntity.ok(response);
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Error: " + e.getMessage());
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", "Error: " + e.getMessage());
+            return ResponseEntity.badRequest().body(errorResponse);
         }
     }
 

@@ -18,8 +18,9 @@ export class RegisterComponent {
   email: string = '';
   password: string = '';
   confirmPassword: string = '';
-  role: string = 'STUDENT'; // Default role
+  role: string = 'STUDENT'; // Ensure this is a valid role
   errorMessage: string = '';
+  successMessage: string = '';
 
   constructor(private authService: AuthService, private router: Router) {}
 
@@ -28,6 +29,7 @@ export class RegisterComponent {
       this.errorMessage = 'Passwords do not match!';
       return;
     }
+
     this.authService
       .register(
         this.name,
@@ -35,12 +37,18 @@ export class RegisterComponent {
         this.username,
         this.email,
         this.password,
-        this.role // Pass the role to the register method
+        this.role
       )
       .subscribe({
         next: (response) => {
-          console.log('Registration successful', response);
-          this.router.navigate(['/login']);
+          if (response.message) {
+            console.log('Registration successful', response.message);
+            this.successMessage = response.message;
+            this.router.navigate(['/login']);
+          } else if (response.error) {
+            console.error('Registration error', response.error);
+            this.errorMessage = response.error;
+          }
         },
         error: (err) => {
           console.error('Registration error', err);

@@ -1,26 +1,43 @@
-import { NgModule } from '@angular/core';
-import { RouterModule, Routes } from '@angular/router';
+import { Routes } from '@angular/router';
+import { LoginComponent } from './components/login/login.component';
+import { RegisterComponent } from './components/register/register.component';
+import { HomeComponent } from './components/home/home.component';
+import { StudentDashboardComponent } from './components/student-dashboard/student-dashboard.component';
+import { InstructorDashboardComponent } from './components/instructor-dashboard/instructor-dashboard.component';
+import { AdminDashboardComponent } from './components/admin-dashboard/admin-dashboard.component';
+import { RoleGuard } from './guards/role.guard';
 
 export const routes: Routes = [
   {
     path: 'login',
-    loadComponent: () =>
-      import('./components/login/login.component').then(
-        (m) => m.LoginComponent
-      ),
+    component: LoginComponent,
   },
   {
     path: 'register',
-    loadComponent: () =>
-      import('./components/register/register.component').then(
-        (m) => m.RegisterComponent
-      ),
+    component: RegisterComponent,
   },
-  { path: '', redirectTo: '/login', pathMatch: 'full' },
+  {
+    path: 'home',
+    component: HomeComponent,
+  },
+  {
+    path: 'student-dashboard',
+    component: StudentDashboardComponent,
+    canActivate: [RoleGuard],
+    data: { roles: ['STUDENT'] }, // Allow only users with STUDENT role
+  },
+  {
+    path: 'instructor-dashboard',
+    component: InstructorDashboardComponent,
+    canActivate: [RoleGuard],
+    data: { roles: ['INSTRUCTOR'] }, // Allow only users with INSTRUCTOR role
+  },
+  {
+    path: 'admin-dashboard',
+    component: AdminDashboardComponent,
+    canActivate: [RoleGuard],
+    data: { roles: ['ADMIN'] }, // Allow only users with ADMIN role
+  },
+  { path: '', redirectTo: '/home', pathMatch: 'full' }, // Default route
+  { path: '**', redirectTo: '/home' }, // Catch-all route
 ];
-
-@NgModule({
-  imports: [RouterModule.forRoot(routes)],
-  exports: [RouterModule],
-})
-export class AppRoutingModule {}
