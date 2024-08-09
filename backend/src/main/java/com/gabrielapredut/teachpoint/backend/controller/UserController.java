@@ -1,6 +1,5 @@
 package com.gabrielapredut.teachpoint.backend.controller;
 
-import com.gabrielapredut.teachpoint.backend.model.User;
 import com.gabrielapredut.teachpoint.backend.model.UserRegistrationRequest;
 import com.gabrielapredut.teachpoint.backend.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;

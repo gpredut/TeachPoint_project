@@ -28,7 +28,7 @@ public class UserService {
     private PasswordEncoder passwordEncoder;
 
     @Autowired
-    private JwtUtil jwtUtil; // Add JwtUtil dependency
+    private JwtUtil jwtUtil; 
 
     public void registerUser(UserRegistrationRequest request) {
         // Convert role name from String to ERole
