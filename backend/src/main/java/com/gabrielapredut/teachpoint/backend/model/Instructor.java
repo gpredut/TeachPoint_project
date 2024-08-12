@@ -1,6 +1,9 @@
 package com.gabrielapredut.teachpoint.backend.model;
 
 import javax.persistence.*;
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotBlank;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,37 +13,47 @@ public class Instructor {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    private Long id;
 
+    @NotBlank(message = "First name cannot be blank")
     @Column(nullable = false)
     private String firstName;
 
+    @NotBlank(message = "Last name cannot be blank")
     @Column(nullable = false)
     private String lastName;
 
+    @NotBlank(message = "Email cannot be blank")
+    @Email(message = "Email should be valid")
     @Column(nullable = false, unique = true)
     private String email;
 
+    @OneToOne
+    @JoinColumn(name = "user_id", unique = true)
+    @JsonIgnore
+    private User user;
+
     @OneToMany(mappedBy = "instructor", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<Course> courses = new ArrayList<>(); // Initialize to avoid null issues
+    @JsonIgnore
+    private List<Course> courses = new ArrayList<>();
 
     // Default constructor
-    public Instructor() {
-    }
+    public Instructor() {}
 
     // Parameterized constructor
-    public Instructor(String firstName, String lastName, String email) {
+    public Instructor(String firstName, String lastName, String email, User user) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
+        this.user = user;
     }
 
     // Getters and setters
-    public long getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -68,6 +81,14 @@ public class Instructor {
         this.email = email;
     }
 
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
     public List<Course> getCourses() {
         return courses;
     }
@@ -76,16 +97,14 @@ public class Instructor {
         this.courses = courses;
     }
 
-    // Add a single course
     public void addCourse(Course course) {
         courses.add(course);
-        course.setInstructor(this); // Set the back-reference
+        course.setInstructor(this);
     }
 
-    // Remove a single course
     public void removeCourse(Course course) {
         courses.remove(course);
-        course.setInstructor(null); // Clear the back-reference
+        course.setInstructor(null);
     }
 }
 

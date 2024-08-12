@@ -1,9 +1,7 @@
 package com.gabrielapredut.teachpoint.backend.service;
 
-import com.gabrielapredut.teachpoint.backend.model.ERole;
-import com.gabrielapredut.teachpoint.backend.model.Role;
-import com.gabrielapredut.teachpoint.backend.model.User;
-import com.gabrielapredut.teachpoint.backend.model.UserRegistrationRequest;
+import com.gabrielapredut.teachpoint.backend.model.*;
+import com.gabrielapredut.teachpoint.backend.repository.InstructorRepository;
 import com.gabrielapredut.teachpoint.backend.repository.RoleRepository;
 import com.gabrielapredut.teachpoint.backend.repository.UserRepository;
 import com.gabrielapredut.teachpoint.backend.security.JwtUtil;
@@ -25,17 +23,20 @@ public class UserService {
     private RoleRepository roleRepository;
 
     @Autowired
+    private InstructorRepository instructorRepository;
+
+    @Autowired
     private PasswordEncoder passwordEncoder;
 
     @Autowired
-    private JwtUtil jwtUtil; 
+    private JwtUtil jwtUtil;
 
     public void registerUser(UserRegistrationRequest request) {
         // Convert role name from String to ERole
         ERole roleEnum = getERoleFromString(request.getRoleName());
 
         // Check if the role exists
-        Role role = roleRepository.findByName(roleEnum)
+        Role role = roleRepository.findByRoleName(roleEnum)
                 .orElseThrow(() -> new RuntimeException("Role not found"));
 
         // Create new User
@@ -51,8 +52,26 @@ public class UserService {
         roles.add(role);
         user.setRoles(roles);
 
-        // Save the user
-        userRepository.save(user);
+        // Save the user first
+        user = userRepository.save(user);
+
+        // If the role is INSTRUCTOR, create and associate an Instructor
+        if (roleEnum == ERole.INSTRUCTOR) {
+            Instructor instructor = new Instructor();
+            instructor.setFirstName(request.getName());
+            instructor.setLastName(request.getSurname());
+            instructor.setEmail(request.getEmail());
+            instructor.setUser(user); // Associate the already saved user
+
+            // Save the instructor
+            instructorRepository.save(instructor);
+
+            // Set the instructor in the user entity
+            user.setInstructor(instructor);
+
+            // Update the user with instructor reference
+            userRepository.save(user);
+        }
     }
 
     private ERole getERoleFromString(String roleName) {
@@ -75,4 +94,3 @@ public class UserService {
         return jwtUtil.createToken(username);
     }
 }
-

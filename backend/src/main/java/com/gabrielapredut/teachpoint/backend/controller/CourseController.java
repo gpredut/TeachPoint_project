@@ -18,8 +18,9 @@ public class CourseController {
     private CourseService courseService;
 
     @GetMapping
-    public List<Course> getAllCourses() {
-        return courseService.findAllCourses();
+    public ResponseEntity<List<Course>> getAllCourses() {
+        List<Course> courses = courseService.findAllCourses();
+        return ResponseEntity.ok(courses);
     }
 
     @GetMapping("/{id}")
@@ -29,28 +30,41 @@ public class CourseController {
     }
 
     @PostMapping
-    public ResponseEntity<Course> createCourse(@RequestBody Course course) {
-        Course savedCourse = courseService.saveCourse(course);
-        return ResponseEntity.status(HttpStatus.CREATED).body(savedCourse);
+    public ResponseEntity<String> createCourse(@RequestBody Course course) {
+        try {
+            Course savedCourse = courseService.saveCourse(course);
+            return ResponseEntity.status(HttpStatus.CREATED)
+                .body("Course created with ID: " + savedCourse.getId());
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body("Error creating course: " + e.getMessage());
+        }
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Course> updateCourse(@PathVariable Long id, @RequestBody Course course) {
+    public ResponseEntity<String> updateCourse(@PathVariable Long id, @RequestBody Course course) {
         if (!courseService.findCourseById(id).isPresent()) {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body("Course not found");
         }
-        course.setId(id);
-        Course updatedCourse = courseService.saveCourse(course);
-        return ResponseEntity.ok(updatedCourse);
+        try {
+            course.setId(id);
+            Course updatedCourse = courseService.saveCourse(course);
+            return ResponseEntity.ok("Course updated with ID: " + updatedCourse.getId());
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body("Error updating course: " + e.getMessage());
+        }
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteCourse(@PathVariable Long id) {
+    public ResponseEntity<String> deleteCourse(@PathVariable Long id) {
         if (!courseService.findCourseById(id).isPresent()) {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body("Course not found");
         }
         courseService.deleteCourse(id);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok("Course deleted with ID: " + id);
     }
 }
 

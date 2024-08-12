@@ -4,7 +4,6 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
-
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashSet;
@@ -14,12 +13,12 @@ import java.util.Set;
 @Table(name = "users")
 public class User implements UserDetails, Serializable {
 
-	 private static final long serialVersionUID = 1L;
-	
+    private static final long serialVersionUID = 1L;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    
+
     @Column
     private String name;
 
@@ -35,6 +34,8 @@ public class User implements UserDetails, Serializable {
     @Column(nullable = false)
     private String password;
 
+    @OneToOne(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private Instructor instructor;
 
     @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinTable(name = "user_roles",
@@ -46,12 +47,11 @@ public class User implements UserDetails, Serializable {
     public User() {}
 
     // Parameterized constructor
-    public User(Long id, String name, String surname, String username, String email, String password) {
-        this.id = id;
+    public User(String name, String surname, String email, String username, String password) {
         this.name = name;
         this.surname = surname;
-        this.username = username;
         this.email = email;
+        this.username = username;
         this.password = password;
     }
 
@@ -80,20 +80,20 @@ public class User implements UserDetails, Serializable {
         this.surname = surname;
     }
 
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
     public String getEmail() {
         return email;
     }
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
     }
 
     public String getPassword() {
@@ -104,6 +104,14 @@ public class User implements UserDetails, Serializable {
         this.password = password;
     }
 
+    public Instructor getInstructor() {
+        return instructor;
+    }
+
+    public void setInstructor(Instructor instructor) {
+        this.instructor = instructor;
+    }
+
     public Set<Role> getRoles() {
         return roles;
     }
@@ -112,7 +120,6 @@ public class User implements UserDetails, Serializable {
         this.roles = roles;
     }
 
-    // Implementation of UserDetails methods
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return getRoles();
@@ -138,5 +145,3 @@ public class User implements UserDetails, Serializable {
         return true;
     }
 }
-
-

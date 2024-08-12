@@ -5,8 +5,9 @@ import com.gabrielapredut.teachpoint.backend.service.InstructorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-
+import javax.validation.Valid;
 import java.util.List;
 import java.util.Optional;
 
@@ -18,8 +19,9 @@ public class InstructorController {
     private InstructorService instructorService;
 
     @GetMapping
-    public List<Instructor> getAllInstructors() {
-        return instructorService.findAllInstructors();
+    public ResponseEntity<List<Instructor>> getAllInstructors() {
+        List<Instructor> instructors = instructorService.findAllInstructors();
+        return ResponseEntity.ok(instructors);
     }
 
     @GetMapping("/{id}")
@@ -29,13 +31,19 @@ public class InstructorController {
     }
 
     @PostMapping
-    public ResponseEntity<Instructor> createInstructor(@RequestBody Instructor instructor) {
+    public ResponseEntity<?> createInstructor(@Valid @RequestBody Instructor instructor, BindingResult result) {
+        if (result.hasErrors()) {
+            return ResponseEntity.badRequest().body(result.getAllErrors());
+        }
         Instructor savedInstructor = instructorService.saveInstructor(instructor);
         return ResponseEntity.status(HttpStatus.CREATED).body(savedInstructor);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Instructor> updateInstructor(@PathVariable Long id, @RequestBody Instructor instructor) {
+    public ResponseEntity<?> updateInstructor(@PathVariable Long id, @Valid @RequestBody Instructor instructor, BindingResult result) {
+        if (result.hasErrors()) {
+            return ResponseEntity.badRequest().body(result.getAllErrors());
+        }
         if (!instructorService.findInstructorById(id).isPresent()) {
             return ResponseEntity.notFound().build();
         }
@@ -53,3 +61,4 @@ public class InstructorController {
         return ResponseEntity.noContent().build();
     }
 }
+

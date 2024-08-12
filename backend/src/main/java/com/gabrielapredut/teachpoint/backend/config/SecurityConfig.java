@@ -47,13 +47,15 @@ public class SecurityConfig {
                 .antMatchers("/api/public/**").permitAll()
                 .antMatchers("/h2-console/**").permitAll()
                 .antMatchers("/favicon.ico").permitAll()
+                .antMatchers("/api/courses/**").permitAll() 
+                .antMatchers("/api/instructors/**").permitAll() 
                 .anyRequest().authenticated()
             )
             .sessionManagement(session -> session
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             )
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-            .headers().frameOptions().disable(); // Allow frame options for H2 Console
+            .headers().frameOptions().disable(); 
 
         return http.build();
     }

@@ -23,7 +23,7 @@ export class RoleGuard implements CanActivate {
     if (userRole === expectedRole) {
       return true;
     } else {
-      this.router.navigate(['/login']); // Redirect to login or any other page
+      this.router.navigate(['/login']);
       return false;
     }
   }

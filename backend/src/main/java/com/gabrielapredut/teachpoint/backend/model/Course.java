@@ -1,20 +1,28 @@
 package com.gabrielapredut.teachpoint.backend.model;
 
+
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Entity
 @Table(name = "courses")
-public class Course {
+public class Course implements Serializable {
+    private static final long serialVersionUID = 1L;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
+    @NotNull
     @Column(nullable = false)
     private String title;
 
+    @Size(max = 1000)
     @Column(length = 1000)
     private String description;
 
@@ -25,16 +33,17 @@ public class Course {
     @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private List<Lecture> lectures = new ArrayList<>();
 
-    
-    public Course() {
-    }
+    // Default constructor
+    public Course() {}
 
+    // Parameterized constructor
     public Course(String title, String description, Instructor instructor) {
         this.title = title;
         this.description = description;
         this.instructor = instructor;
     }
 
+    // Getters and setters
     public long getId() {
         return id;
     }
@@ -75,15 +84,37 @@ public class Course {
         this.lectures = lectures;
     }
 
-    // Add a single lecture
     public void addLecture(Lecture lecture) {
         lectures.add(lecture);
-        lecture.setCourse(this); // Set the back-reference
+        lecture.setCourse(this);
     }
 
-    // Remove a single lecture
     public void removeLecture(Lecture lecture) {
         lectures.remove(lecture);
-        lecture.setCourse(null); // Clear the back-reference
+        lecture.setCourse(null);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Course course = (Course) o;
+        return id == course.id;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
+
+    @Override
+    public String toString() {
+        return "Course{" +
+                "id=" + id +
+                ", title='" + title + '\'' +
+                ", description='" + description + '\'' +
+                ", instructor=" + (instructor != null ? instructor.getId() : "null") +
+                '}';
     }
 }
+

@@ -18,5 +18,5 @@ public class RoleController {
         return ResponseEntity.ok(roleService.createRole(role));
     }
 
-    // Other role-related endpoints can be added here
+    
 }
